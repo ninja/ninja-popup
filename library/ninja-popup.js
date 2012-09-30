@@ -16,7 +16,7 @@
       });
     } else if (popup.$element.data('popup')) {
       popup.$html = $('<span>', {
-        text: popup.$element.data('popup')
+        html: popup.$element.data('popup')
       });
     } else {
       $.ninja.error('Popup must include JavaScipt html option or HTML data-popup attribute.');
