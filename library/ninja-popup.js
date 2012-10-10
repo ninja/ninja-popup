@@ -47,6 +47,8 @@
       if (popup.trigger === 'toggle') {
         $(document).on('click.ninja', function () {
           popup.$element.trigger('click');
+
+          $(document).off('click.ninja');
         });
       }
 
