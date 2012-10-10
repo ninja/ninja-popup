@@ -23,83 +23,93 @@
     }
 
     if (options && 'hover' in options && options.hover === true) {
-      popup.trigger = 'hover';
+      popup.trigger = 'hover.ninja';
     } else {
-      popup.trigger = 'toggle';
+      popup.trigger = 'click.ninja';
     }
 
     popup.$point = $('<span>');
 
     popup.$popup = $('<span class="ninja-popup">').append(popup.$point, popup.$html);
 
-    popup.$element[popup.trigger](function () {
-      popup.$window = $(window);
+    popup.$element.on(popup.trigger, function (event) {
+      event.stopImmediatePropagation();
 
-      popup.viewport = {
-        left: popup.$window.scrollLeft(),
-        top: popup.$window.scrollTop()
-      };
-      popup.viewport.bottom = popup.viewport.top + popup.$window.height();
-      popup.viewport.right = popup.viewport.left + popup.$window.width();
+      if (popup.$element.data('ninja-popup') === 'active') {
+        popup.$element.data('ninja-popup', 'inactive');
 
-      $(document.body).append(popup.$popup);
-
-      if (popup.trigger === 'toggle') {
-        $(document).on('click.ninja', function () {
-          popup.$element.trigger('click');
-
-          $(document).off('click.ninja');
-        });
-      }
-
-      if (popup.$element.css('display') === 'inline') {
-        popup.elementHeight = popup.$element.height();
-        popup.elementWidth = popup.$element.width();
+        popup.$popup.detach();
       } else {
-        popup.elementHeight = popup.$element.outerHeight();
-        popup.elementWidth = popup.$element.outerWidth();
+        popup.$element.data('ninja-popup', 'active');
+
+        popup.$window = $(window);
+
+        popup.viewport = {
+          left: popup.$window.scrollLeft(),
+          top: popup.$window.scrollTop()
+        };
+        popup.viewport.bottom = popup.viewport.top + popup.$window.height();
+        popup.viewport.right = popup.viewport.left + popup.$window.width();
+
+        $(document.body).append(popup.$popup);
+
+        if (popup.trigger === 'click.ninja') {
+          $(document).on('click.ninja-popup', function () {
+            popup.$element.data('ninja-popup', 'inactive');
+
+            popup.$popup.detach();
+
+            $(document).off('click.ninja-popup');
+          });
+        }
+
+        if (popup.$element.css('display') === 'inline') {
+          popup.elementHeight = popup.$element.height();
+          popup.elementWidth = popup.$element.width();
+        } else {
+          popup.elementHeight = popup.$element.outerHeight();
+          popup.elementWidth = popup.$element.outerWidth();
+        }
+        popup.elementHalfHeight = popup.elementHeight / 2;
+        popup.elementHalfWidth = popup.elementWidth / 2;
+
+        popup.offset = popup.$element.offset();
+        popup.offset.center = popup.offset.left + popup.elementHalfWidth;
+        popup.offset.middle = popup.offset.top + popup.elementHalfHeight;
+
+        popup.height = popup.$popup.outerHeight();
+        popup.width = popup.$popup.outerWidth();
+        popup.halfHeight = popup.height / 2;
+        popup.halfWidth = popup.width / 2;
+
+        if ((popup.offset.top - popup.height) < popup.viewport.top) {
+          popup.$point.attr('class', 'ninja-point-up');
+
+          popup.$popup.css('top', Math.round(popup.offset.top + popup.elementHeight + 6));
+        } else {
+          popup.$point.attr('class', 'ninja-point-down');
+
+          popup.$popup.css('top', Math.round(popup.offset.top - popup.height - 6));
+        }
+
+        popup.$point.css('left', Math.round(popup.halfWidth - 5));
+
+        if ((popup.offset.left + popup.elementHalfWidth + popup.halfWidth) > popup.viewport.right) {
+          popup.$popup.css({
+            right: 0
+          });
+
+          popup.$point.css('right', Math.round(popup.offset.center));
+        } else if ((popup.offset.left + popup.elementHalfWidth - popup.halfWidth) < popup.viewport.left) {
+          popup.$popup.css({
+            left: 0
+          });
+        } else {
+          popup.$popup.css({
+            left: Math.round(popup.offset.left + popup.elementHalfWidth - popup.halfWidth)
+          });
+        }
       }
-      popup.elementHalfHeight = popup.elementHeight / 2;
-      popup.elementHalfWidth = popup.elementWidth / 2;
-
-      popup.offset = popup.$element.offset();
-      popup.offset.center = popup.offset.left + popup.elementHalfWidth;
-      popup.offset.middle = popup.offset.top + popup.elementHalfHeight;
-
-      popup.height = popup.$popup.outerHeight();
-      popup.width = popup.$popup.outerWidth();
-      popup.halfHeight = popup.height / 2;
-      popup.halfWidth = popup.width / 2;
-
-      if ((popup.offset.top - popup.height) < popup.viewport.top) {
-        popup.$point.attr('class', 'ninja-point-up');
-
-        popup.$popup.css('top', Math.round(popup.offset.top + popup.elementHeight + 6));
-      } else {
-        popup.$point.attr('class', 'ninja-point-down');
-
-        popup.$popup.css('top', Math.round(popup.offset.top - popup.height - 6));
-      }
-
-      popup.$point.css('left', Math.round(popup.halfWidth - 5));
-
-      if ((popup.offset.left + popup.elementHalfWidth + popup.halfWidth) > popup.viewport.right) {
-        popup.$popup.css({
-          right: 0
-        });
-
-        popup.$point.css('right', Math.round(popup.offset.center));
-      } else if ((popup.offset.left + popup.elementHalfWidth - popup.halfWidth) < popup.viewport.left) {
-        popup.$popup.css({
-          left: 0
-        });
-      } else {
-        popup.$popup.css({
-          left: Math.round(popup.offset.left + popup.elementHalfWidth - popup.halfWidth)
-        });
-      }
-    }, function () {
-      popup.$popup.detach();
     });
   };
 
