@@ -44,6 +44,12 @@
 
       $(document.body).append(popup.$popup);
 
+      if (popup.trigger === 'toggle') {
+        $(document).on('click.ninja', function () {
+          popup.$popup.detach();
+        });
+      }
+
       if (popup.$element.css('display') === 'inline') {
         popup.elementHeight = popup.$element.height();
         popup.elementWidth = popup.$element.width();
